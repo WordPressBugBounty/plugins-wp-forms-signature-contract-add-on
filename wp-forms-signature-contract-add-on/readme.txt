@@ -2,8 +2,8 @@
 Contributors: approveme
 Tags:   WP Forms, WP Form, WPForms, contract, proposal, digital signature, e-signature, esign, contact form, signature pad, wordpress form, wordpress e-signature, wordpress signature
 Requires at least: 4.5
-Tested up to: 6.5
-Stable tag: 1.8.1
+Tested up to: 6.8
+Stable tag: 1.8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -470,6 +470,9 @@ Important: Do NOT include this page in your Nav menu since all of the magic actu
 
 
 == Changelog ==
+Version 1.8.2
+FIX: Some minor bugs
+
 Version 1.8.1
 FIX: Some minor bugs
 
