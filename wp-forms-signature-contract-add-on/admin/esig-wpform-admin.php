@@ -82,8 +82,15 @@ if (!class_exists('ESIG_WPFORM_Admin')) :
             foreach ($temp_data as $invite => $data) {
                 if ($data['signed'] == "no") {
                     $invite_url = ESIG_WPFORM_SETTING::get_invite_url($invite);
-                    wp_redirect($invite_url);
-                    exit;
+                    // Validate redirect URL to prevent open redirect attacks
+                    if (!empty($invite_url)) {
+                        $invite_url = wp_sanitize_redirect($invite_url);
+                        $invite_url = wp_validate_redirect($invite_url, home_url());
+                        if ($invite_url) {
+                            wp_safe_redirect($invite_url);
+                            exit;
+                        }
+                    }
                 }
             }
         }
@@ -269,8 +276,17 @@ if (!class_exists('ESIG_WPFORM_Admin')) :
                 $invitation_id = $invite_controller->save($invitation);
                 $invite_hash = WP_E_Sig()->invite->getInviteHash($invitation_id);
                 self::save_invite_url($invite_hash, $doc->document_checksum);
-                wp_redirect(self::get_invite_url());
-                exit();
+                
+                $redirect_url = self::get_invite_url();
+                // Validate redirect URL to prevent open redirect attacks
+                if (!empty($redirect_url)) {
+                    $redirect_url = wp_sanitize_redirect($redirect_url);
+                    $redirect_url = wp_validate_redirect($redirect_url, home_url());
+                    if ($redirect_url) {
+                        wp_safe_redirect($redirect_url);
+                        exit();
+                    }
+                }
             }
         }
 
@@ -366,35 +382,76 @@ if (!class_exists('ESIG_WPFORM_Admin')) :
 
         public function esig_wpform_fields() {
 
-            if (!function_exists('WP_E_Sig'))
-                    return;
-            $form_id = $_POST['form_id'];
-            
-            
+            // Verify nonce for security
+            if (!check_ajax_referer('esig_wpform_fields', 'esig_wpform_nonce', false)) {
+                wp_send_json_error(array('message' => __('Security check failed. Please refresh the page and try again.', 'wpform-wpesignature')));
+                return;
+            }
+
+            // Check user capabilities
+            if (!current_user_can('edit_posts')) {
+                wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wpform-wpesignature')));
+                return;
+            }
+
+            // Check E-Signature plugin is available
+            if (!function_exists('WP_E_Sig')) {
+                wp_send_json_error(array('message' => __('E-Signature plugin is not available.', 'wpform-wpesignature')));
+                return;
+            }
+
+            // Check current user is e-signature sender
+            if (!WP_E_Sig()->user->checkEsigAdmin(get_current_user_id())) {
+                wp_send_json_error(array('message' => __('You are not authorized to perform this action.', 'wpform-wpesignature')));
+                return;
+            }
+
+            // Validate and sanitize form_id
+            $form_id = isset($_POST['form_id']) ? $_POST['form_id'] : '';
+            if (empty($form_id) || !is_numeric($form_id)) {
+                wp_send_json_error(array('message' => __('Invalid form ID provided.', 'wpform-wpesignature')));
+                return;
+            }
+
+            $form_id = absint($form_id);
+
+            // Check if WPForms class exists
+            if (!class_exists('WPForms_Form_Handler')) {
+                wp_send_json_error(array('message' => __('WPForms is not available.', 'wpform-wpesignature')));
+                return;
+            }
+
             $wpform = new WPForms_Form_Handler();
-            //$wpform = WPForms::instance();
             $wpform_array = $wpform->get($form_id, array('content_only' => true));
             
+            if (empty($wpform_array) || !isset($wpform_array['fields']) || !is_array($wpform_array['fields'])) {
+                wp_send_json_error(array('message' => __('Form not found or has no fields.', 'wpform-wpesignature')));
+                return;
+            }
             
             $wpform_field = $wpform_array['fields'];
             $html = '';
                
             $html .= '<select id="esig_wpform_field_id" name="esig_wpform_field_id" class="chosen-select" style="width:250px;">';
-            $html .= '<option value="all">'. __('Insert all fields','esign').'
-            </option>';
+            $html .= '<option value="all">' . esc_html__('Insert all fields', 'esign') . '</option>';
+            
             foreach ($wpform_field as $field) {
 
                 if ($field['type'] == 'pagebreak' || $field['type'] == 'divider' || $field['type'] == 'hidden') {
                     continue;
                 }
-                $labelDisable = esig_wpform_get('label_disable',$field);
+                
+                $labelDisable = esig_wpform_get('label_disable', $field);
                 if ($labelDisable == '1') {
                     $field['label'] = ' HTML/Code Block';
                 }
-                $html .= '<option value=' . $field['id'] . '>' . $field['label'] . '</option>';
+                
+                $field_id = absint($field['id']);
+                $field_label = esc_html($field['label']);
+                $html .= '<option value="' . $field_id . '">' . $field_label . '</option>';
             }
             
-            $html .='</select>';
+            $html .= '</select>';
             echo $html;
             die();
         }
@@ -457,7 +514,7 @@ if (!class_exists('ESIG_WPFORM_Admin')) :
 
             $doc = WP_E_Sig()->document->getDocument($docId);
             if (!isset($doc->document_content)) {
-                return $show;
+                return $ret;
             }
             $document_content = $doc->document_content;
             $document_raw = WP_E_Sig()->signature->decrypt(ENCRYPTION_KEY, $document_content);
@@ -482,6 +539,12 @@ if (!class_exists('ESIG_WPFORM_Admin')) :
             if (in_array(esig_wpform_get("id",$screen), $admin_screens)) {
                 wp_enqueue_script('jquery');
                 wp_enqueue_script($this->plugin_slug . '-admin-script', plugins_url('assets/js/esig-add-wpform.js', __FILE__), array('jquery', 'jquery-ui-dialog'), '0.1.0', true);
+                
+                // Localize script with nonce for AJAX security
+                wp_localize_script($this->plugin_slug . '-admin-script', 'esigWpformAjax', array(
+                    'ajaxurl' => admin_url('admin-ajax.php'),
+                    'esig_wpform_nonce' => wp_create_nonce('esig_wpform_fields')
+                ));
             }
 
             $page= esig_wpform_get("page");

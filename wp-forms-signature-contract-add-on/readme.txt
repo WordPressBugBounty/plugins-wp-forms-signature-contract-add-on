@@ -2,8 +2,8 @@
 Contributors: approveme
 Tags:   WP Forms, WP Form, WPForms, contract, proposal, digital signature, e-signature, esign, contact form, signature pad, wordpress form, wordpress e-signature, wordpress signature
 Requires at least: 4.5
-Tested up to: 6.8
-Stable tag: 1.8.2
+Tested up to: 6.9
+Stable tag: 1.8.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -404,6 +404,7 @@ If you’ve already purchased a license key and need to retrieve the license num
 
 Your license grants you access to all of our support resources, documentation, product downloads and basic and advanced add-ons like Stand Alone Documents, Document Templates, Unlimited Sender Roles and others, (which are required for this WP Forms WP E-Signature Plugin) for one calendar year from your purchase date.
 
+
 [You can get an elite license here](https://www.approveme.com/wpforms-special-pricing/?utm_source=wprepo&utm_medium=link&utm_campaign=wpforms)
 
 = How much does it cost to renew my license? =
@@ -421,8 +422,11 @@ Renewing your license provides an additional year of support and software update
 
 = Where do I go for help on additional pre-sale questions? =
 
-
 Please feel free to contact us at anytime with any additional questions you might have at our [contact form page](https://www.approveme.com/letschat/?utm_source=wprepo&utm_medium=link&utm_campaign=wpforms).
+
+= Where do I report security bugs found in this plugin? =
+
+Please report security bugs found in the source code of the WP Forms Signature Contract Add-On plugin through the [Patchstack Vulnerability Disclosure  Program](https://patchstack.com/database/vdp/e16fb73b-8fd4-4a08-b5ea-ae1f6009d783). The Patchstack team will assist you with verification, CVE assignment, and notify the developers of this plugin.
 
 == Screenshots ==
 1. **Add New Document:** Once you’ve installed the WP e-signature, you will need to draft up a new “Stand Alone Document”
@@ -470,6 +474,10 @@ Important: Do NOT include this page in your Nav menu since all of the magic actu
 
 
 == Changelog ==
+Version 1.8.3
+ADDED: Improved security by sanitizing and validating redirect URLs to prevent open redirect vulnerabilities.
+FIX: Minor bugs and stability improvements.
+
 Version 1.8.2
 FIX: Some minor bugs
 

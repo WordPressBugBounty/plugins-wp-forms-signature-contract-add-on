@@ -6,7 +6,7 @@
  * Plugin Name:       WPForms Signature Contract Add-on by ApproveMe.com
  * Plugin URI:        http://aprv.me/2lIyMBx
  * Description:       This add-on makes it possible to automatically email a WP E-Signature contract (or redirect a user to a contract) after the user has successfully submitted a WPForms. You can also insert data from the submitted WPForms into the WP E-Signature contract.
- * Version:           1.8.2
+ * Version:           1.8.3
  * Author:            ApproveMe.com
  * Author URI:        http://aprv.me/wpForms
  * Text Domain:       esig-wpform
@@ -21,7 +21,7 @@
 /**
  * Define constants
  */
-define( 'WPFORM_WPESIGNATURE_VER', '1.8.2' );
+define( 'WPFORM_WPESIGNATURE_VER', '1.8.3' );
 define( 'WPFORM_WPESIGNATURE_URL',     plugin_dir_url( __FILE__ ) );
 define( 'WPFORM_WPESIGNATURE_PATH',    dirname( __FILE__ ) . '/' );
 define( 'WPFORM_WPESIGNATURE_CORE',    dirname( __FILE__ )  );

@@ -46,8 +46,39 @@ if (!class_exists('esignRatingWidgetWpForm')) :
         }
 
         public function esigWpformRattingWidgetRemove() {
-            update_option('remove_rating_widget_wpform','Yes');
-            die();
+            
+            // Verify nonce for security
+            if (!check_ajax_referer('esig_wpform_fields', 'esig_wpform_nonce', false)) {
+                wp_send_json_error(array('message' => __('Security check failed. Please refresh the page and try again.', 'wpform-wpesignature')));
+                return;
+            }
+
+            // Check user capabilities
+            if (!current_user_can('manage_options')) {
+                wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wpform-wpesignature')));
+                return;
+            }
+
+            // Check E-Signature plugin is available
+            if (!function_exists('WP_E_Sig')) {
+                wp_send_json_error(array('message' => __('E-Signature plugin is not available.', 'wpform-wpesignature')));
+                return;
+            }
+
+            // Check current user is e-signature sender
+            if (!WP_E_Sig()->user->checkEsigAdmin(get_current_user_id())) {
+                wp_send_json_error(array('message' => __('You are not authorized to perform this action.', 'wpform-wpesignature')));
+                return;
+            }
+
+            // Update option with proper sanitization
+            $result = update_option('remove_rating_widget_wpform', 'Yes');
+            
+            if ($result) {
+                wp_send_json_success(array('message' => __('Rating widget hidden successfully.', 'wpform-wpesignature')));
+            } else {
+                wp_send_json_error(array('message' => __('Failed to update settings.', 'wpform-wpesignature')));
+            }
         }
         
          public function enqueueAdminStyles() {
@@ -70,6 +101,12 @@ if (!class_exists('esignRatingWidgetWpForm')) :
             
             if (($current == 'toplevel_page_esign-docs')) {              
                  wp_enqueue_script('wpform-rating-widget-admin-script', plugins_url('assets/js/rating-widget-control.js', __FILE__), array('jquery', 'jquery-ui-dialog'), '0.1.1', true);
+                 
+                 // Localize script with nonce for AJAX security
+                 wp_localize_script('wpform-rating-widget-admin-script', 'esigWpformAjax', array(
+                     'ajaxurl' => admin_url('admin-ajax.php'),
+                     'esig_wpform_nonce' => wp_create_nonce('esig_wpform_fields')
+                 ));
             }
 
         }

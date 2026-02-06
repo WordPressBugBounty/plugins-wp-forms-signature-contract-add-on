@@ -13,7 +13,7 @@
 		    $wpid = get_current_user_id();
 		    
 		    $users = $esig_user->getUserByWPID($wpid); 
-		    echo $users->first_name . ","; 
+		    echo esc_html($users->first_name) . ","; 
 		   
 		   ?>
 		   
