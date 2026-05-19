@@ -75,9 +75,11 @@ class esig_wpform_document_view {
                                 	    foreach($wp_form as $form)
                                 	    {
                                              
-                                                
+                                                // Security: Escape option values and text to prevent XSS
+                                                $escaped_form_id = esc_attr($form->ID);
+                                                $escaped_form_title = esc_html($form->post_title);
                                 	       
-                                	        $more_option_page .=	'<option value="'. $form->ID . '">'.$form->post_title.'</option>';
+                                	        $more_option_page .=	'<option value="'. $escaped_form_id . '">'.$escaped_form_title.'</option>';
                                 	    }
                                             }
                                            
@@ -87,7 +89,7 @@ class esig_wpform_document_view {
                          	  
                                 	    </p>
                                 	    
-                                        <p id="upload_wpform_button" align="center">
+                                        <p id="upload_wpform_button_step1" align="center">
                                            <a href="#" id="esig-wpform-create" class="button-primary esig-button-large">'.__('Next Step', 'esig').'</a>
                                          </p>
                                      
@@ -99,14 +101,17 @@ class esig_wpform_document_view {
                                             
                                         	<div align="center" class="esig-popup-header esign-form-header">'.__('What WP form field data would you like to insert?', 'esig').'</div>
                                             
-                                            <p id="esig-wpform-field-option" align="center">
-                               
-
-
-
-                                             </p>
+                                            <!-- Loading message container -->
+                                            <div id="esig-wpform-loading-container" align="center" style="display:none; padding: 30px 20px; margin: 20px 0;">
+                                                <img src="'.ESIGN_ASSETS_DIR_URI.'/images/ajax-loader.gif" alt="'.__('Loading...', 'esig').'" style="display: inline-block; vertical-align: middle; margin-right: 10px;" />
+                                                <span style="font-size: 14px; color: #555;">'.__('Loading form fields...', 'esig').'</span>
+                                            </div>
                                             
-<p id="select-wpform-field-display-type" align="center">
+                                            <!-- Field options will be inserted here -->
+                                            <div id="esig-wpform-field-option" align="center" style="display:none;">
+                                             </div>
+                                            
+                                            <div id="select-wpform-field-display-type" align="center" style="display:none;">
                                 	    
                         		        <select data-placeholder="Choose a Option..." class="chosen-select" tabindex="2" id="esig-wpform-form-id" name="esig_wpform_value_display_type">
                         			     <option value="value">'.__('Select a display type', 'esig').'</option>
@@ -119,11 +124,12 @@ class esig_wpform_document_view {
                                            
                                 	    $more_option_page .='</select>
                                 	    
-                        				</p>
+                        				</div>
                                             
-                                             <p id="upload_wpform_button" align="center">
+                                            <!-- Add to Document button -->
+                                             <div id="upload_wpform_button_step2" align="center" style="display:none;">
                                            <a href="#" id="esig-wpform-insert" class="button-primary esig-button-large" >'.__('Add to Document', 'esig').'</a>
-                                         </p>
+                                         </div>
                                             
                                             </div>
                                     <!-- wpform form second step end here -->';           

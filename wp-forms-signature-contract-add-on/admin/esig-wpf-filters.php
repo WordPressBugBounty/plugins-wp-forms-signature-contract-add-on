@@ -75,7 +75,9 @@ if (!class_exists('esigWpFormFilters')):
                 $fieldId = is_array($matches) ? $matches[0][0] : false;
                 if (is_numeric($fieldId)) {
                     $wpformValue = wp_strip_all_tags(ESIG_WPFORM_SETTING::generate_value($docId, $formId, $fieldId,"value","default"));
-                    $docTitle = str_replace("{{wpform-field-id-" . $fieldId . "}}", $wpformValue, $docTitle);
+                    // Security: Escape wpformValue to prevent XSS in document title
+                    $escaped_wpform_value = esc_html($wpformValue);
+                    $docTitle = str_replace("{{wpform-field-id-" . $fieldId . "}}", $escaped_wpform_value, $docTitle);
                    
                 }
             }

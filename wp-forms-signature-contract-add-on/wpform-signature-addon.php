@@ -6,31 +6,34 @@
  * Plugin Name:       WPForms Signature Contract Add-on by ApproveMe.com
  * Plugin URI:        http://aprv.me/2lIyMBx
  * Description:       This add-on makes it possible to automatically email a WP E-Signature contract (or redirect a user to a contract) after the user has successfully submitted a WPForms. You can also insert data from the submitted WPForms into the WP E-Signature contract.
- * Version:           1.8.3
+ * Version:           2.0
  * Author:            ApproveMe.com
  * Author URI:        http://aprv.me/wpForms
- * Text Domain:       esig-wpform
- * Domain Path:       /languages
  * License/Terms & Conditions: http://www.approveme.com/terms-conditions/
  * Privacy Policy: http://www.approveme.com/privacy-policy/
  * License:     GPLv2+
- * Text Domain: wpform-wpesignature
- * Domain Path: /languages
+ *
+ * Text Domain and Domain Path omitted from header so WordPress does not request translation
+ * for plugin name/description before init (WP 6.7+). Domains esig-wpform and wpform-wpesignature
+ * are loaded at init below for use inside the plugin.
  */
 
 /**
  * Define constants
  */
-define( 'WPFORM_WPESIGNATURE_VER', '1.8.3' );
+define( 'WPFORM_WPESIGNATURE_VER', '2.0' );
 define( 'WPFORM_WPESIGNATURE_URL',     plugin_dir_url( __FILE__ ) );
 define( 'WPFORM_WPESIGNATURE_PATH',    dirname( __FILE__ ) . '/' );
 define( 'WPFORM_WPESIGNATURE_CORE',    dirname( __FILE__ )  );
 
 /**
- * Default initialization for the plugin:
- * - Registers the default textdomain.
+ * Load text domains at init priority 0 (WordPress 6.7+). Registered at file load so no translation runs before init.
  */
-
+add_action( 'init', function () {
+	$rel = dirname( plugin_basename( __FILE__ ) ) . '/languages/';
+	load_plugin_textdomain( 'esig-wpform', false, $rel );
+	load_plugin_textdomain( 'wpform-wpesignature', false, $rel );
+}, 0 );
 
 /*----------------------------------------------------------------------------*
  * Public-Facing Functionality

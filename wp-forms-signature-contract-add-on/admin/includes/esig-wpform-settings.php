@@ -66,9 +66,9 @@ if (!class_exists('ESIG_WPFORM_SETTING')):
 
         public static function save_temp_settings($value) {
             $json = json_encode($value);
-            esig_setcookie(self::CF_COOKIE, $json, 600);
+            esig_setcookie(self::WPF_COOKIE, $json, 600);
             // for instant cookie load. 
-            $_COOKIE[self::CF_COOKIE] = $json;
+            $_COOKIE[self::WPF_COOKIE] = $json;
         }
 
         public static function save_invite_url($invite_hash, $document_checksum) {
@@ -116,7 +116,9 @@ if (!class_exists('ESIG_WPFORM_SETTING')):
                 $items = '';
                 foreach ($value as $key => $item) {
                     if ($item) {
-                        $items .= '<li><span style="font-size:16px;">&#10003;</span>' . $item . '</li>';
+                        // Security: Escape checkbox item to prevent XSS
+                        $escaped_item = esc_html($item);
+                        $items .= '<li><span style="font-size:16px;">&#10003;</span>' . $escaped_item . '</li>';
                     }
                 }
                 return "<ul class='esig-checkbox-tick'>$items</ul>";
@@ -124,7 +126,9 @@ if (!class_exists('ESIG_WPFORM_SETTING')):
 
 
             foreach ($value as $key => $val) {
-                $html .= '<input type="checkbox" disabled readonly checked="checked"> ' . $val . "<br>";
+                // Security: Escape checkbox value to prevent XSS
+                $escaped_val = esc_html($val);
+                $html .= '<input type="checkbox" disabled readonly checked="checked"> ' . $escaped_val . "<br>";
             }
             return $html;
         }
@@ -133,22 +137,16 @@ if (!class_exists('ESIG_WPFORM_SETTING')):
             $html = '';
 
             if (is_array($value)) {
-                if($underline == "underline")
-                {
-                    $html .= ' <a href="mailto:' . $value['primary'] . '" target="_blank"><u>' . $value['primary'] . '</u>.</a>';
-                } else {
-                    $html .= ' <a href="mailto:' . $value['primary'] . '" target="_blank">' . $value['primary'] . '</a>';
-                }
-               
+                $raw = isset($value['primary']) ? $value['primary'] : '';
             } else {
-                if ($underline == "underline") 
-                {
-                    $html .= ' <a href="mailto:' . $value . '" target="_blank"><u>' . $value . '</u></a>';
-                } else {
-                    $html .= ' <a href="mailto:' . $value . '" target="_blank">' . $value . '</a>';
-                }
-                
+                $raw = $value;
             }
+
+            $escaped_attr = esc_attr($raw);
+            $escaped_text = esc_html($raw);
+
+            $html = '<a href="mailto:' . $escaped_attr . '" target="_blank">' . $escaped_text . '</a>';
+
             return $html;
         }
 
@@ -220,7 +218,11 @@ if (!class_exists('ESIG_WPFORM_SETTING')):
                 $items = '';
                 foreach ($value as $item) {               
                     if ($item['value']) {
-                        $items .=  '<a href='.$item['value'].' style='.$style.' >'.$item['name'].'</a><br>';  
+                        // Security: Escape file URLs, filenames, and style to prevent XSS
+                        $escaped_url = esc_url($item['value']);
+                        $escaped_name = esc_html($item['name']);
+                        $escaped_style = esc_attr($style);
+                        $items .=  '<a href="'.$escaped_url.'" style="'.$escaped_style.'" >'.$escaped_name.'</a><br>';  
                     }
                 }
             }
@@ -273,11 +275,14 @@ if (!class_exists('ESIG_WPFORM_SETTING')):
                     return self::returnValue($display, $fieldLabel, $result);
                     break;
                 case 'url':
+                    // Security: Escape URL values and text to prevent XSS
+                    $escaped_url = esc_url($value);
+                    $escaped_url_text = esc_html($value);
                     if($underline_data =="underline")
                     {
-                        $result = '<a href="' . $value . '" target="_blank"><u>' . $value . '</u></a>';
+                        $result = '<a href="' . $escaped_url . '" target="_blank"><u>' . $escaped_url_text . '</u></a>';
                     } else {
-                        $result = '<a href="' . $value . '" target="_blank">' . $value . '</a>';
+                        $result = '<a href="' . $escaped_url . '" target="_blank">' . $escaped_url_text . '</a>';
                     }
                     
                     return self::returnValue($display, $fieldLabel, $result);
@@ -293,9 +298,13 @@ if (!class_exists('ESIG_WPFORM_SETTING')):
                     break;
                 default :
                     if ($display == "value") {
-                        return $value;
+                        // Security: Escape value to prevent XSS
+                        return esc_html($value);
                     } elseif ($display == "label_value") {
-                        return $fieldLabel . ": " . $value;
+                        // Security: Escape label and value to prevent XSS
+                        $escaped_label = esc_html($fieldLabel);
+                        $escaped_value = esc_html($value);
+                        return $escaped_label . ": " . $escaped_value;
                     }
             }
         }
@@ -342,9 +351,9 @@ if (!class_exists('ESIG_WPFORM_SETTING')):
 
             $result = '';
             if ($underline_data == "underline") {
-                $result .= '<u>' . $wpform_value . '</u>';
+                $result .= '<u>' . wp_kses_post($wpform_value) . '</u>';
             } else {
-                $result .= $wpform_value;
+                $result .= wp_kses_post($wpform_value);
             }
             return $result;
         }

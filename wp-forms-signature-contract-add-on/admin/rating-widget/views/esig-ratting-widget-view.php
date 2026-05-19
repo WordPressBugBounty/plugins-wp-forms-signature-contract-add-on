@@ -1,6 +1,6 @@
-<input type="hidden" id="wpform-feedback-url" value="<?php echo $data['feedback_url']?>">
-<input type="hidden" id="wpform-rating-url" value="<?php echo $data['plugin_url']?>">
-<input type="hidden" id="wpform-plugin-name" value="<?php echo $data['form_name']?>">
+<input type="hidden" id="wpform-feedback-url" value="<?php echo esc_attr($data['feedback_url'])?>">
+<input type="hidden" id="wpform-rating-url" value="<?php echo esc_attr($data['plugin_url'])?>">
+<input type="hidden" id="wpform-plugin-name" value="<?php echo esc_attr($data['form_name'])?>">
 
 
 <div id="esign-wpform-ratting" class="postbox esign_ratting_section">

@@ -71,16 +71,17 @@ function wpform_hide_permanent() {
         esignRatting.parentNode.removeChild(esignRatting);
 
         var pluginName = document.getElementById('wpform-plugin-name').value;
-        
-        // Get nonce for security
-        var nonce = (typeof esigWpformAjax !== 'undefined') ? esigWpformAjax.esig_wpform_nonce : '';
-        
-        // Send AJAX request with nonce
-        var postData = {
-            esig_wpform_nonce: nonce
-        };
-        
+        // Security: Include nonce in AJAX request
+        // Try esigWpformRating first, then fallback to esigAjax
+        var nonce = (typeof esigWpformRating !== 'undefined' && esigWpformRating.nonce) 
+            ? esigWpformRating.nonce 
+            : (typeof esigWpformAjax !== 'undefined' && esigWpformAjax.nonce) 
+                ? esigWpformAjax.nonce 
+                : (typeof esigAjax !== 'undefined' && esigAjax._wpnonce) 
+                    ? esigAjax._wpnonce 
+                    : '';
+        var postData = { nonce: nonce };
         esigRemoteRequest("esig_wpform_ratting_widget_remove", "POST", function(pluginName){
-            // Success callback - widget already hidden from UI
+
         }, postData);
 } 
